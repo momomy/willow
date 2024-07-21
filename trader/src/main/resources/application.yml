@@ -1,0 +1,14 @@
+server:
+  port: 10001
+  shutdown: graceful
+
+logging:
+  level:
+    org.springframework.web.reactive.function.client.WebClient: DEBUG
+    reactor.netty.http.client.HttpClient: DEBUG
+    org.springframework.http: DEBUG
+    org.springframework.web: DEBUG
+    org.springframework.boot: INFO
+    io.netty: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} %-5level [%thread] %logger{36} - %msg%n"
