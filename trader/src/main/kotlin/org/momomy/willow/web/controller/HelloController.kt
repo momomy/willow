@@ -8,6 +8,6 @@ class HelloController {
 
     @GetMapping("/hello")
     fun hello(): String {
-        return "Hello, Swagger!"
+        return "Hello, Willow!"
     }
 }
