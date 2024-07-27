@@ -198,4 +198,17 @@ class UpbitController {
             uuid = uuid
         )
     }
+
+    @GetMapping("/orders/{market}/open")
+    fun getOpenOrders(
+        @PathVariable market: Market,
+        @RequestParam(required = false, defaultValue = "1") state: OrderDto.State,
+        @RequestParam(required = false, defaultValue = "1") page: Int,
+    ): Flux<OrderDto> {
+        return UpbitClient.getOpenOrderList(
+            market = market,
+            state = state,
+            page = page
+        )
+    }
 }

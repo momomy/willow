@@ -1,6 +1,5 @@
 package org.momomy.willow.exchange.upbit.dto
 
-import com.fasterxml.jackson.annotation.JsonEnumDefaultValue
 import com.fasterxml.jackson.databind.PropertyNamingStrategies
 import com.fasterxml.jackson.databind.annotation.JsonNaming
 
@@ -9,7 +8,7 @@ data class MarketDto(
     val market: Market,
     val koreanName: String,
     val englishName: String,
-    val marketWarning: MarketWarningType
+    val marketEvent: Event
 ) {
     val marketType: MarketType
         get() = MarketType.find(market)
@@ -21,7 +20,7 @@ data class MarketDto(
         USDT("USDT");
 
         companion object {
-            private val MAP = MarketType.values().associateBy { it.prefix }
+            private val MAP = entries.associateBy { it.prefix }
 
             fun find(market: String): MarketType {
                 return market.split('-')[0]
@@ -31,15 +30,17 @@ data class MarketDto(
     }
 
     val warning: Boolean
-        get() = marketWarning != MarketWarningType.NONE
+        get() = marketEvent.warning
 
-    enum class MarketWarningType {
 
-        // 해당없음
-        @JsonEnumDefaultValue
-        NONE,
-
-        // 투자유의
-        CAUTION
-    }
+    data class Event(
+        /**
+         * 유의종목 지정 여부
+         */
+        val warning: Boolean,
+        /**
+         * 주의종목 지정 여부
+         */
+        val caution: Map<String, Boolean>
+    )
 }

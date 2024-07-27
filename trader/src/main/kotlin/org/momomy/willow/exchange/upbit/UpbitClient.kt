@@ -36,6 +36,7 @@ object UpbitClient {
     const val SERVER_URL = "https://api.upbit.com"
     const val RETRY_COUNT = 10_000L
     const val MAX_CANDLE_COUNT = 200
+    const val MAX_ORDER_COUNT = 100
 
     private val log: Logger = LoggerFactory.getLogger(UpbitClient::class.java)
 
@@ -247,6 +248,10 @@ object UpbitClient {
         )
     }
 
+    /**
+     * 주문하기
+     * https://docs.upbit.com/reference/%EC%A3%BC%EB%AC%B8%ED%95%98%EA%B8%B0
+     */
     private fun order(request: OrderRequestDto): Mono<OrderDto> {
 
         val params: HashMap<String, String?> = HashMap()
@@ -301,6 +306,10 @@ object UpbitClient {
             }
     }
 
+    /**
+     * 주문취소
+     * https://docs.upbit.com/reference/%EC%A3%BC%EB%AC%B8-%EC%B7%A8%EC%86%8C
+     */
     fun cancel(uuid: String): Mono<OrderDto> {
 
         val queryString = "uuid=$uuid"
@@ -327,6 +336,11 @@ object UpbitClient {
             }
     }
 
+    /**
+     * 주문 내역 조회
+     * https://docs.upbit.com/reference/%EB%8C%80%EA%B8%B0-%EC%A3%BC%EB%AC%B8-%EC%A1%B0%ED%9A%8C
+     */
+    @Deprecated(message = "2024년 내에 종료 예정", level = DeprecationLevel.WARNING)
     fun getOrderList(
         market: Market,
         state: OrderDto.State,
@@ -349,6 +363,39 @@ object UpbitClient {
                     .bodyToMono(String::class.java)
                     .map {
                         logResponseError(it)
+                        RuntimeException(it)
+                    }
+            })
+            .bodyToFlux(OrderDto::class.java)
+            .retryWhen(Retry.fixedDelay(RETRY_COUNT, Duration.ofMillis(100)))
+    }
+
+    /**
+     * 대기 중인 주문 목록 조회
+     * https://docs.upbit.com/reference/%EB%8C%80%EA%B8%B0-%EC%A3%BC%EB%AC%B8-%EC%A1%B0%ED%9A%8C
+     */
+    fun getOpenOrderList(
+        market: Market,
+        state: OrderDto.State,
+        page: Int,
+        limit: Int = MAX_ORDER_COUNT
+    ): Flux<OrderDto> {
+
+        val queryString = "market=$market&state=${state.code}&limit=$limit&page=$page"
+        val authenticationToken = generateAuthenticationToken(queryString)
+
+        return webClient.get()
+            .uri("/v1/orders/open?$queryString")
+            .accept(MediaType.APPLICATION_JSON)
+            .header("Authorization", authenticationToken)
+            .retrieve()
+            .onStatus({
+                !it.is2xxSuccessful
+            }, { response ->
+                response
+                    .bodyToMono(String::class.java)
+                    .map {
+                        log.info("## responseBody: {}", it)
                         RuntimeException(it)
                     }
             })
