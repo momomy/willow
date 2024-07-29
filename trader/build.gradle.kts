@@ -26,6 +26,8 @@ val auth0JavaJwtVersion = "4.2.2"
 val springDocOpenapiWebmvcUiVersion = "2.2.0"
 
 dependencies {
+	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core")
+	implementation("org.jetbrains.kotlinx:kotlinx-coroutines-reactor")
 	implementation("org.springframework.boot:spring-boot-starter-quartz")
 	implementation("org.springframework.boot:spring-boot-starter-webflux")
 	implementation("org.springframework.boot:spring-boot-starter-web")
@@ -41,6 +43,7 @@ dependencies {
 	testImplementation("org.jetbrains.kotlin:kotlin-test-junit5")
 	testImplementation("org.springframework.shell:spring-shell-starter-test")
 	testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+
 
 }
 

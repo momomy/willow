@@ -3,7 +3,7 @@ package org.momomy.willow.exchange.upbit.unit
 import java.math.BigDecimal
 import java.math.RoundingMode
 
-object TradingPriceUnitOptimizer {
+object UpbitUnitOptimizer {
     fun unit(price: Double): Double {
         return when {
             2_000_000.0 <= price -> 1_000.0
@@ -45,10 +45,9 @@ object TradingPriceUnitOptimizer {
     /**
      * 가격 기준으로 매도 가격 반환
      */
-    fun getAskPrice(price: Double, tradingPriceUnitRate: Double): Double {
-        val askPrice = price * (1 - tradingPriceUnitRate)
-        val unit = BigDecimal.valueOf(unit(askPrice))
-        return BigDecimal.valueOf(askPrice).setScale(unit.scale(), RoundingMode.DOWN)
+    fun getAskPrice(price: Double): Double {
+        val unit = BigDecimal.valueOf(unit(price))
+        return BigDecimal.valueOf(price).setScale(unit.scale(), RoundingMode.DOWN)
             .divide(unit, 0, RoundingMode.DOWN)
             .multiply(unit)
             .toDouble()
@@ -58,20 +57,22 @@ object TradingPriceUnitOptimizer {
     /**
      * 가격 기준으로 매수 가격 반환
      */
-    fun getBidPrice(price: Double, tradingPriceUnitRate: Double): Double {
-        val bidPrice = price * (1 + tradingPriceUnitRate)
-        val unit = BigDecimal.valueOf(unit(bidPrice))
-        return BigDecimal.valueOf(bidPrice).setScale(unit.scale(), RoundingMode.UP)
+    fun getBidPrice(price: Double): Double {
+        val unit = BigDecimal.valueOf(unit(price))
+        return BigDecimal.valueOf(price).setScale(unit.scale(), RoundingMode.UP)
             .divide(unit, 0, RoundingMode.UP)
             .multiply(unit)
             .toDouble()
     }
 }
 
+private fun BigDecimal.toScale(): BigDecimal =
+    this.setScale(UpbitUnitOptimizer.scale(this.toDouble()), RoundingMode.HALF_UP)
+
 fun BigDecimal.bidPrice(): BigDecimal =
-    BigDecimal.valueOf(TradingPriceUnitOptimizer.getBidPrice(this.toDouble(), 0.0))
+    BigDecimal.valueOf(UpbitUnitOptimizer.getBidPrice(this.toDouble())).toScale()
 
 fun BigDecimal.askPrice(): BigDecimal =
-    BigDecimal.valueOf(TradingPriceUnitOptimizer.getAskPrice(this.toDouble(), 0.0))
+    BigDecimal.valueOf(UpbitUnitOptimizer.getAskPrice(this.toDouble())).toScale()
 
 fun BigDecimal.volume(): BigDecimal = this.setScale(8, RoundingMode.DOWN)

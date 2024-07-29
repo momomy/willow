@@ -107,7 +107,7 @@ object UpbitClient {
     fun getDaysCandles(
         market: Market,
         count: Int = MAX_CANDLE_COUNT,
-        to: LocalDateTime?
+        to: LocalDateTime? = null
     ): Flux<DayCandleDto> {
         return webClient.get()
             .uri(
